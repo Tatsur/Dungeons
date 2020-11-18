@@ -26,10 +26,19 @@ public class Projectile {
         active = false;
     }
 
-    public void activate(float x, float y, float vx, float vy) {
+    public void activate(float x, float y, float vx, float vy, Directions direction) {
         active = true;
-        position.set(x, y);
-        velocity.set(vx, vy);
+        position.set(x,y);
+        switch (direction){
+            case UP: velocity.set(vy,vx);
+            break;
+            case DOWN: velocity.set(vy,-vx);
+            break;
+            case LEFT:  velocity.set(-vx,vy);
+            break;
+            case RIGHT: velocity.set(vx,vy);
+            break;
+        }
     }
 
     public void update(float dt) {
