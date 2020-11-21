@@ -26,19 +26,10 @@ public class Projectile {
         active = false;
     }
 
-    public void activate(float x, float y, float vx, float vy, Directions direction) {
+    public void activate(float x, float y, float vx, float vy) {
         active = true;
-        position.set(x,y);
-        switch (direction){
-            case UP: velocity.set(vy,vx);
-            break;
-            case DOWN: velocity.set(vy,-vx);
-            break;
-            case LEFT:  velocity.set(-vx,vy);
-            break;
-            case RIGHT: velocity.set(vx,vy);
-            break;
-        }
+        position.set(x, y);
+        velocity.set(vx, vy);
     }
 
     public void update(float dt) {
@@ -46,10 +37,6 @@ public class Projectile {
         if (position.x < 0 || position.x > 1280 || position.y < 0 || position.y > 720) {
             deactivate();
         }
-        // position = (100, 100)
-        // velocity = (200, 40)
-        // position.add(velocity) => (100 + 200, 100 + 40) !!! incorrect
-        // position.mulAdd(velocity, dt) => (100 + 200 * dt, 100 + 40 * dt)
     }
 
     public void render(SpriteBatch batch) {

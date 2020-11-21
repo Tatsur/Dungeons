@@ -20,10 +20,10 @@ public class ProjectileController {
         }
     }
 
-    public void activate(float x, float y, float vx, float vy,Directions direction) {
+    public void activate(float x, float y, float vx, float vy) {
         for (Projectile p : items) {
             if (!p.isActive()) {
-                p.activate(x, y, vx, vy, direction);
+                p.activate(x, y, vx, vy);
                 return;
             }
         }
