@@ -12,6 +12,12 @@ public class Hero extends Unit {
     float movementMaxTime;
     int targetX, targetY;
 
+    public int getExperience() {
+        return experience;
+    }
+
+    int experience = 0;
+
     public Hero(TextureAtlas atlas, GameController gc) {
         super(gc, 1, 1, 10);
         this.texture = atlas.findRegion("knight");
@@ -19,6 +25,8 @@ public class Hero extends Unit {
         this.movementMaxTime = 0.2f;
         this.targetX = cellX;
         this.targetY = cellY;
+        this.damage = 1;
+        maxTurns = 10;
     }
 
     public void update(float dt) {
@@ -42,6 +50,8 @@ public class Hero extends Unit {
             targetX = cellX;
             targetY = cellY;
             m.takeDamage(1);
+            if(!m.isActive()) getExp();
+            calcTurns();
         }
 
         if (!gc.getGameMap().isCellPassable(targetX, targetY)) {
@@ -55,8 +65,17 @@ public class Hero extends Unit {
                 movementTime = 0;
                 cellX = targetX;
                 cellY = targetY;
+                calcTurns();
             }
         }
+    }
+    private void calcTurns(){
+        if(turns>0){
+            turns--;
+        }else turns = maxTurns - 1;
+    }
+    private void getExp() {
+        experience += 10;
     }
 
     @Override

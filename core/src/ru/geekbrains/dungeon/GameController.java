@@ -10,6 +10,7 @@ public class GameController {
     private Hero hero;
     private MonsterController monsterController;
     private GameMap gameMap;
+    private UI ui;
 
     private int cursorX, cursorY;
 

@@ -15,6 +15,9 @@ public abstract class Unit {
     int hpMax;
     int cellX;
     int cellY;
+    int turns;
+    int maxTurns;
+    int damage;
     Vector2 tmp;
 
     public int getCellX() {
