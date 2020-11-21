@@ -10,11 +10,16 @@ public class GameController {
     private Hero hero;
     private MonsterController monsterController;
     private GameMap gameMap;
+    private UI ui;
 
     private int cursorX, cursorY;
 
     public int getCursorX() {
         return cursorX;
+    }
+
+    public UI getUi() {
+        return ui;
     }
 
     public int getCursorY() {
@@ -42,6 +47,7 @@ public class GameController {
         this.hero = new Hero(atlas, this);
         this.monsterController = new MonsterController(this, atlas);
         this.gameMap = new GameMap(atlas);
+        this.ui = new UI(this);
         this.monsterController.activate(5, 5);
         this.monsterController.activate(8, 8);
     }
