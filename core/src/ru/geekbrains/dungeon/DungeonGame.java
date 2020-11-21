@@ -40,6 +40,7 @@ public class DungeonGame extends ApplicationAdapter {
         gameController.getHero().render(batch);
         gameController.getMonsterController().render(batch);
         gameController.getProjectileController().render(batch);
+        gameController.getUi().render(batch);
         batch.setColor(1,1,1,0.5f);
         batch.draw(cursorTexture, gameController.getCursorX() * GameMap.CELL_SIZE, gameController.getCursorY() * GameMap.CELL_SIZE);
         batch.setColor(1,1,1,1);

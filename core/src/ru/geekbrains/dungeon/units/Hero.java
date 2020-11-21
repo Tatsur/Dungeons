@@ -27,6 +27,7 @@ public class Hero extends Unit {
         this.targetY = cellY;
         this.damage = 1;
         maxTurns = 10;
+        turns = maxTurns;
     }
 
     public void update(float dt) {
@@ -50,6 +51,7 @@ public class Hero extends Unit {
             targetX = cellX;
             targetY = cellY;
             m.takeDamage(1);
+            m.returnAttack();
             if(!m.isActive()) getExp();
             calcTurns();
         }
@@ -70,9 +72,9 @@ public class Hero extends Unit {
         }
     }
     private void calcTurns(){
-        if(turns>0){
+        if(turns>1){
             turns--;
-        }else turns = maxTurns - 1;
+        }else turns = maxTurns;
     }
     private void getExp() {
         experience += 10;

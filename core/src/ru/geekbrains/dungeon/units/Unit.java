@@ -54,4 +54,8 @@ public abstract class Unit {
         batch.draw(textureHp, cellX * GameMap.CELL_SIZE + 2, cellY * GameMap.CELL_SIZE + 52, (float) hp / hpMax * 56, 8);
         batch.setColor(1.0f, 1.0f, 1.0f, 1.0f);
     }
+
+    public int getTurns(){
+        return turns;
+    };
 }
