@@ -21,4 +21,7 @@ public class BattleCalc {
         }
         return 0;
     }
+    public static float destination(Unit thisUnit, Unit target){
+        return (float) Math.sqrt(Math.pow(thisUnit.getCellX()-target.getCellX(),2)-Math.pow(thisUnit.getCellY()-target.getCellY(),2));
+    }
 }
