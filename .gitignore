@@ -120,6 +120,5 @@ Thumbs.db
 /settings.gradle
 /tools/
 /gradle/
-/core/assets/
 /core/build.gradle
 /desktop/build.gradle

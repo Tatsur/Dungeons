@@ -1,8 +1,6 @@
-package ru.geekbrains.dungeon;
+package ru.geekbrains.dungeon.game;
 
 import com.badlogic.gdx.math.MathUtils;
-import org.graalvm.compiler.loop.MathUtil;
-import ru.geekbrains.dungeon.units.Unit;
 
 public class BattleCalc {
     public static int attack(Unit attacker, Unit target) {
@@ -20,8 +18,5 @@ public class BattleCalc {
             return amount;
         }
         return 0;
-    }
-    public static float destination(Unit thisUnit, Unit target){
-        return (float) Math.sqrt(Math.pow(thisUnit.getCellX()-target.getCellX(),2)-Math.pow(thisUnit.getCellY()-target.getCellY(),2));
     }
 }

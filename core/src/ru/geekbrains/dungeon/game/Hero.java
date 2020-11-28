@@ -1,22 +1,19 @@
-package ru.geekbrains.dungeon.units;
+package ru.geekbrains.dungeon.game;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Input;
-import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.graphics.g2d.TextureAtlas;
-import com.badlogic.gdx.math.MathUtils;
-import org.graalvm.compiler.loop.MathUtil;
-import ru.geekbrains.dungeon.BattleCalc;
-import ru.geekbrains.dungeon.GameController;
-import ru.geekbrains.dungeon.GameMap;
+import ru.geekbrains.dungeon.helpers.Assets;
+import ru.geekbrains.dungeon.game.GameController;
 
 public class Hero extends Unit {
-    public Hero(TextureAtlas atlas, GameController gc) {
+    private String name;
+
+    public Hero(GameController gc) {
         super(gc, 1, 1, 10);
+        this.name = "Sir Mullih";
         this.hpMax = 100;
         this.hp = this.hpMax;
-        this.texture = atlas.findRegion("knight");
-        this.textureHp = atlas.findRegion("hp");
+        this.texture = Assets.getInstance().getAtlas().findRegion("knight");
+        this.textureHp = Assets.getInstance().getAtlas().findRegion("hp");
     }
 
     public void update(float dt) {
@@ -29,5 +26,9 @@ public class Hero extends Unit {
                 goTo(gc.getCursorX(), gc.getCursorY());
             }
         }
+    }
+
+    public String getName() {
+        return name;
     }
 }
