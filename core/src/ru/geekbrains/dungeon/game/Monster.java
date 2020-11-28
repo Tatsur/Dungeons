@@ -8,12 +8,16 @@ import ru.geekbrains.dungeon.helpers.Utils;
 public class Monster extends Unit {
     private float aiBrainsImplseTime;
     private Unit target;
+    private int dx;
+    private int dy;
 
     public Monster(GameController gc) {
         super(gc, 5, 2, 10);
         this.texture = Assets.getInstance().getAtlas().findRegion("monster");
         this.textureHp = Assets.getInstance().getAtlas().findRegion("hp");
         this.hp = -1;
+        this.dx = -1;
+        this.dy = -1;
     }
 
     public void activate(int cellX, int cellY) {
@@ -21,6 +25,7 @@ public class Monster extends Unit {
         this.cellY = cellY;
         this.targetX = cellX;
         this.targetY = cellY;
+        this.maxCoinsLoot = 3;
         this.hpMax = 10;
         this.hp = hpMax;
         this.target = gc.getUnitController().getHero();
@@ -51,11 +56,7 @@ public class Monster extends Unit {
         if (Utils.getCellsIntDistance(cellX, cellY, target.getCellX(), target.getCellY()) < 5) {
             tryToMove(target.getCellX(), target.getCellY());
         } else {
-            int dx, dy;
-            do {
-                dx = MathUtils.random(0, gc.getGameMap().getCellsX() - 1);
-                dy = MathUtils.random(0, gc.getGameMap().getCellsY() - 1);
-            } while (!(isCellEmpty(dx, dy) && Utils.isCellsAreNeighbours(cellX, cellY, dx, dy)));
+            findEmptySpawn(dx,dy);
             tryToMove(dx, dy);
         }
     }
