@@ -2,6 +2,9 @@ package ru.geekbrains.dungeon.game;
 
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.math.MathUtils;
+import ru.geekbrains.dungeon.helpers.Utils;
+import sun.tools.java.ClassType;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,6 +15,9 @@ public class UnitController {
     private Hero hero;
     private Unit currentUnit;
     private int index;
+    private int rounds;
+    private int dx;
+    private int dy;
     private List<Unit> allUnits;
 
     public MonsterController getMonsterController() {
@@ -20,6 +26,10 @@ public class UnitController {
 
     public Hero getHero() {
         return hero;
+    }
+
+    public int getRounds() {
+        return rounds;
     }
 
     public boolean isItMyTurn(Unit unit) {
@@ -45,10 +55,16 @@ public class UnitController {
         this.monsterController.activate(5, 5);
         this.monsterController.activate(9, 5);
         this.index = -1;
+        this.rounds = 0;
+        this.dx = -1;
+        this.dy = -1;
         this.allUnits = new ArrayList<>();
         this.allUnits.add(hero);
         this.allUnits.addAll(monsterController.getActiveList());
         this.nextTurn();
+    }
+    public void calcRounds(){
+        rounds++;
     }
 
     public void nextTurn() {
@@ -58,6 +74,10 @@ public class UnitController {
         }
         currentUnit = allUnits.get(index);
         currentUnit.startTurn();
+        if(rounds%3 == 0 && currentUnit.equals(gc.getUnitController().hero)){
+            this.monsterController.activate(10,10);
+            allUnits.add(monsterController.getMonsterInCell(10,10));
+        }
     }
 
     public void render(SpriteBatch batch, BitmapFont font18) {

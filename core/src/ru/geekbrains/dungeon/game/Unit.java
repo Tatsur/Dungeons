@@ -5,6 +5,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.MathUtils;
 import ru.geekbrains.dungeon.helpers.Poolable;
+import ru.geekbrains.dungeon.helpers.Utils;
 
 public abstract class Unit implements Poolable {
     GameController gc;
@@ -22,6 +23,8 @@ public abstract class Unit implements Poolable {
     int targetX, targetY;
     int turns, maxTurns;
     float innerTimer;
+    int coins;
+    int maxCoinsLoot;
 
     public int getDefence() {
         return defence;
@@ -47,6 +50,7 @@ public abstract class Unit implements Poolable {
         this.cellY = cellY;
         this.targetX = cellX;
         this.targetY = cellY;
+        this.coins = 0;
         this.damage = 2;
         this.defence = 1;
         this.maxTurns = 5;
@@ -57,6 +61,7 @@ public abstract class Unit implements Poolable {
 
     public void startTurn() {
         turns = maxTurns;
+        if(hp<hpMax) ++hp;
     }
 
     @Override
@@ -98,7 +103,12 @@ public abstract class Unit implements Poolable {
     public void attack(Unit target) {
         target.takeDamage(BattleCalc.attack(this, target));
         this.takeDamage(BattleCalc.checkCounterAttack(this, target));
+        if(target.hp<=0) loot(target);
         turns--;
+    }
+
+    private int loot(Unit target){
+        return coins += MathUtils.random(1,target.maxCoinsLoot);
     }
 
     public void update(float dt) {
@@ -113,7 +123,13 @@ public abstract class Unit implements Poolable {
             }
         }
     }
-
+    private float alphaHpBar(){
+        if(isMaxHp()) return 0.2f;
+        return 1f;
+    }
+    private boolean isMaxHp(){
+        return hp >= hpMax;
+    }
     public void render(SpriteBatch batch, BitmapFont font18) {
         float px = cellX * GameMap.CELL_SIZE;
         float py = cellY * GameMap.CELL_SIZE;
@@ -122,17 +138,25 @@ public abstract class Unit implements Poolable {
             py = cellY * GameMap.CELL_SIZE + (targetY - cellY) * (movementTime / movementMaxTime) * GameMap.CELL_SIZE;
         }
         batch.draw(texture, px, py);
-        batch.setColor(0.0f, 0.0f, 0.0f, 1.0f);
+        batch.setColor(0.0f, 0.0f, 0.0f, alphaHpBar());
 
 
         float barX = px, barY = py + MathUtils.sin(innerTimer * 5.0f) * 2;
         batch.draw(textureHp, barX + 1, barY + 51, 58, 10);
-        batch.setColor(0.7f, 0.0f, 0.0f, 1.0f);
+        batch.setColor(0.7f, 0.0f, 0.0f, alphaHpBar());
         batch.draw(textureHp, barX + 2, barY + 52, 56, 8);
-        batch.setColor(0.0f, 1.0f, 0.0f, 1.0f);
+        batch.setColor(0.0f, 1.0f, 0.0f, alphaHpBar());
         batch.draw(textureHp, barX + 2, barY + 52, (float) hp / hpMax * 56, 8);
         batch.setColor(1.0f, 1.0f, 1.0f, 1.0f);
         font18.draw(batch, "" + hp, barX, barY + 64, 60, 1, false);
+    }
+
+
+    public void findEmptySpawn(int dx, int dy){
+        do {
+            dx = MathUtils.random(0, gc.getGameMap().getCellsX() - 1);
+            dy = MathUtils.random(0, gc.getGameMap().getCellsY() - 1);
+        } while (!(isCellEmpty(dx, dy) && Utils.isCellsAreNeighbours(cellX, cellY, dx, dy)));
     }
 
     public int getTurns() {
