@@ -13,10 +13,12 @@ public class GameMap {
     private class Cell {
         CellType type;
         int index;
+        boolean visible;
 
         public Cell() {
             type = CellType.GRASS;
             index = 0;
+            visible = false;
         }
 
         public void changeType(CellType to) {
@@ -43,8 +45,10 @@ public class GameMap {
     private Cell[][] data;
     private TextureRegion grassTexture;
     private TextureRegion[] treesTextures;
+    private GameController gc;
 
-    public GameMap() {
+    public GameMap(GameController gc) {
+        this.gc = gc;
         this.data = new Cell[CELLS_X][CELLS_Y];
         for (int i = 0; i < CELLS_X; i++) {
             for (int j = 0; j < CELLS_Y; j++) {
@@ -73,11 +77,21 @@ public class GameMap {
 
     public void render(SpriteBatch batch) {
         for (int i = 0; i < CELLS_X; i++) {
-            for (int j = CELLS_Y - 1; j >= 0; j--) {
-                batch.draw(grassTexture, i * CELL_SIZE, j * CELL_SIZE);
-                if (data[i][j].type == CellType.TREE) {
-                    batch.draw(treesTextures[data[i][j].index], i * CELL_SIZE, j * CELL_SIZE);
-                }
+            for (int j = CELLS_Y; j >= 0; j--) {
+                    if(gc.inHeroVisionRadius(i,j)) {
+                        //data[i][j].visible = true;
+                   // }
+                   // if (data[i][j].visible) {
+
+                        batch.setColor(1,1,1,1);
+                        batch.draw(grassTexture, i * CELL_SIZE, j * CELL_SIZE);
+                        if (j<CELLS_Y && data[i][j].type == CellType.TREE) {
+                            batch.draw(treesTextures[data[i][j].index], i * CELL_SIZE, j * CELL_SIZE);
+                        }
+                    } else {
+                        batch.draw(grassTexture, i * CELL_SIZE, j * CELL_SIZE);
+                        batch.setColor(0, 0, 0, 1);
+                    }
             }
         }
     }
