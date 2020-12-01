@@ -10,6 +10,11 @@ import ru.geekbrains.dungeon.screens.ScreenManager;
 
 public class Hero extends Unit {
     private String name;
+    private final int vision = 4;
+
+    public int getVision() {
+        return vision;
+    }
 
     public Hero(GameController gc) {
         super(gc, 1, 1, 10);
@@ -23,13 +28,26 @@ public class Hero extends Unit {
     public void update(float dt) {
         super.update(dt);
         if (Gdx.input.justTouched() && canIMakeAction()) {
+            if(gc.getCursorX() == cellX && gc.getCursorY() == cellY) {
+                endTurn = true;
+                return;
+            }
             Monster m = gc.getUnitController().getMonsterController().getMonsterInCell(gc.getCursorX(), gc.getCursorY());
+            target = m;
             if (m != null && canIAttackThisTarget(m)) {
                 attack(m);
             } else {
                 goTo(gc.getCursorX(), gc.getCursorY());
             }
         }
+    }
+    @Override
+    public boolean canIAttackInRange(Unit target){
+        for (int i = -attackRange; i < attackRange; i++) {
+            if(gc.getUnitController().getMonsterController().getMonsterInCell(cellX + i,cellY) != null ||
+                    gc.getUnitController().getMonsterController().getMonsterInCell(cellX,cellY + i) != null) return true;
+        }
+        return false;
     }
 
     public void renderHUD(SpriteBatch batch, BitmapFont font, int x, int y) {

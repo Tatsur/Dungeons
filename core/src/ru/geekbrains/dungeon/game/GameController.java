@@ -3,6 +3,7 @@ package ru.geekbrains.dungeon.game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import lombok.Data;
 import ru.geekbrains.dungeon.screens.ScreenManager;
@@ -10,11 +11,11 @@ import ru.geekbrains.dungeon.screens.ScreenManager;
 @Data
 public class GameController {
     public static final int INITIAL_MONSTERS_COUNT = 3;
-    public static final int TURNS_COUNT = 5;
 
     private SpriteBatch batch;
     private ProjectileController projectileController;
     private UnitController unitController;
+    private LootController lootController;
     private GameMap gameMap;
 
     private Vector2 mouse;
@@ -27,9 +28,10 @@ public class GameController {
         this.batch = batch;
         this.mouse = new Vector2(0, 0);
         this.pressedMouse = new Vector2(0, 0);
-        this.gameMap = new GameMap();
+        this.gameMap = new GameMap(this);
         this.unitController = new UnitController(this);
         this.projectileController = new ProjectileController();
+        this.lootController = new LootController();
         this.unitController.init(INITIAL_MONSTERS_COUNT);
         this.round = 1;
     }
@@ -50,6 +52,12 @@ public class GameController {
         checkMouse();
         projectileController.update(dt);
         unitController.update(dt);
+        lootController.update(dt);
+    }
+    public boolean inHeroVisionRadius(int x,int y){
+        int heroX = getUnitController().getHero().cellX;
+        int heroY = getUnitController().getHero().cellY;
+        return  ((int) Math.sqrt((heroX-x)*(heroX-x)+(heroY-y)*(heroY-y))<= getUnitController().getHero().getVision());
     }
 
     public void checkMouse() {

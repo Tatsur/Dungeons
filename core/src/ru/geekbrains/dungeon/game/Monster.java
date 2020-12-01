@@ -4,10 +4,8 @@ import com.badlogic.gdx.math.MathUtils;
 import ru.geekbrains.dungeon.helpers.Assets;
 import ru.geekbrains.dungeon.game.GameController;
 import ru.geekbrains.dungeon.helpers.Utils;
-
 public class Monster extends Unit {
     private float aiBrainsImplseTime;
-    private Unit target;
 
     public Monster(GameController gc) {
         super(gc, 5, 2, 10);
@@ -33,7 +31,7 @@ public class Monster extends Unit {
             if (isStayStill()) {
                 aiBrainsImplseTime += dt;
             }
-            if (aiBrainsImplseTime > 0.4f) {
+            if (aiBrainsImplseTime > 0.1f) {
                 aiBrainsImplseTime = 0.0f;
                 think(dt);
             }
@@ -46,7 +44,6 @@ public class Monster extends Unit {
             return;
         }
         if (amIBlocked()) {
-            turns = 0;
             return;
         }
         if (Utils.getCellsIntDistance(cellX, cellY, target.getCellX(), target.getCellY()) < 5) {
