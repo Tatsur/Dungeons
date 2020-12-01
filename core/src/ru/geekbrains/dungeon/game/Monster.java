@@ -8,27 +8,23 @@ import ru.geekbrains.dungeon.helpers.Utils;
 public class Monster extends Unit {
     private float aiBrainsImplseTime;
     private Unit target;
-    private int dx;
-    private int dy;
 
     public Monster(GameController gc) {
         super(gc, 5, 2, 10);
         this.texture = Assets.getInstance().getAtlas().findRegion("monster");
         this.textureHp = Assets.getInstance().getAtlas().findRegion("hp");
         this.hp = -1;
-        this.dx = -1;
-        this.dy = -1;
     }
 
-    public void activate(int cellX, int cellY) {
+    public Monster activate(int cellX, int cellY) {
         this.cellX = cellX;
         this.cellY = cellY;
         this.targetX = cellX;
         this.targetY = cellY;
-        this.maxCoinsLoot = 3;
         this.hpMax = 10;
         this.hp = hpMax;
         this.target = gc.getUnitController().getHero();
+        return this;
     }
 
     public void update(float dt) {
@@ -56,7 +52,11 @@ public class Monster extends Unit {
         if (Utils.getCellsIntDistance(cellX, cellY, target.getCellX(), target.getCellY()) < 5) {
             tryToMove(target.getCellX(), target.getCellY());
         } else {
-            findEmptySpawn(dx,dy);
+            int dx, dy;
+            do {
+                dx = MathUtils.random(0, gc.getGameMap().getCellsX() - 1);
+                dy = MathUtils.random(0, gc.getGameMap().getCellsY() - 1);
+            } while (!(gc.isCellEmpty(dx, dy) && Utils.isCellsAreNeighbours(cellX, cellY, dx, dy)));
             tryToMove(dx, dy);
         }
     }
@@ -66,7 +66,7 @@ public class Monster extends Unit {
         float bestDst = 10000;
         for (int i = cellX - 1; i <= cellX + 1; i++) {
             for (int j = cellY - 1; j <= cellY + 1; j++) {
-                if (Utils.isCellsAreNeighbours(cellX, cellY, i, j) && isCellEmpty(i, j)) {
+                if (Utils.isCellsAreNeighbours(cellX, cellY, i, j) && gc.isCellEmpty(i, j)) {
                     float dst = Utils.getCellsFloatDistance(preferedX, preferedY, i, j);
                     if (dst < bestDst) {
                         bestDst = dst;

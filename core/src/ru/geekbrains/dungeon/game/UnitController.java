@@ -3,41 +3,28 @@ package ru.geekbrains.dungeon.game;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.MathUtils;
-import ru.geekbrains.dungeon.helpers.Utils;
-import sun.tools.java.ClassType;
+import lombok.Data;
+import ru.geekbrains.dungeon.screens.ScreenManager;
 
 import java.util.ArrayList;
 import java.util.List;
 
+@Data
 public class UnitController {
     private GameController gc;
     private MonsterController monsterController;
     private Hero hero;
     private Unit currentUnit;
     private int index;
-    private int rounds;
-    private int dx;
-    private int dy;
     private List<Unit> allUnits;
-
-    public MonsterController getMonsterController() {
-        return monsterController;
-    }
-
-    public Hero getHero() {
-        return hero;
-    }
-
-    public int getRounds() {
-        return rounds;
-    }
 
     public boolean isItMyTurn(Unit unit) {
         return currentUnit == unit;
     }
 
     public boolean isCellFree(int cellX, int cellY) {
-        for (Unit u : allUnits) {
+        for (int i = 0; i < allUnits.size(); i++) {
+            Unit u = allUnits.get(i);
             if (u.getCellX() == cellX && u.getCellY() == cellY) {
                 return false;
             }
@@ -47,37 +34,34 @@ public class UnitController {
 
     public UnitController(GameController gc) {
         this.gc = gc;
+        this.allUnits = new ArrayList<>();
         this.hero = new Hero(gc);
         this.monsterController = new MonsterController(gc);
     }
 
-    public void init() {
-        this.monsterController.activate(5, 5);
-        this.monsterController.activate(9, 5);
-        this.index = -1;
-        this.rounds = 0;
-        this.dx = -1;
-        this.dy = -1;
-        this.allUnits = new ArrayList<>();
+    public void init(int monsterCount) {
         this.allUnits.add(hero);
-        this.allUnits.addAll(monsterController.getActiveList());
+        for (int i = 0; i < monsterCount; i++) {
+            this.createMonsterInRandomCell();
+        }
+        this.index = -1;
         this.nextTurn();
     }
-    public void calcRounds(){
-        rounds++;
+
+    public void startRound() {
+        for (int i = 0; i < getAllUnits().size(); i++) {
+            getAllUnits().get(i).startRound();
+        }
     }
 
     public void nextTurn() {
         index++;
         if (index >= allUnits.size()) {
             index = 0;
+            gc.roundUp();
         }
         currentUnit = allUnits.get(index);
         currentUnit.startTurn();
-        if(rounds%3 == 0 && currentUnit.equals(gc.getUnitController().hero)){
-            this.monsterController.activate(10,10);
-            allUnits.add(monsterController.getMonsterInCell(10,10));
-        }
     }
 
     public void render(SpriteBatch batch, BitmapFont font18) {
@@ -100,5 +84,20 @@ public class UnitController {
         if (unitIndex <= index) {
             index--;
         }
+    }
+
+    public void createMonsterInRandomCell() {
+        int cellX = -1, cellY = -1;
+        do {
+            cellX = MathUtils.random(gc.getGameMap().getCellsX() - 1);
+            cellY = MathUtils.random(gc.getGameMap().getCellsY() - 1);
+        } while (!gc.isCellEmpty(cellX, cellY));
+
+        createMonster(cellX, cellY);
+    }
+
+    public void createMonster(int cellX, int cellY) {
+        Monster m = monsterController.activate(cellX, cellY);
+        allUnits.add(m);
     }
 }

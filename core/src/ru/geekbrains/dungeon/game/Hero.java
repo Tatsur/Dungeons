@@ -3,25 +3,21 @@ package ru.geekbrains.dungeon.game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import lombok.Data;
 import ru.geekbrains.dungeon.helpers.Assets;
 import ru.geekbrains.dungeon.game.GameController;
+import ru.geekbrains.dungeon.screens.ScreenManager;
 
 public class Hero extends Unit {
     private String name;
 
     public Hero(GameController gc) {
         super(gc, 1, 1, 10);
-        this.name = "Sir Mullih";
+        this.name = "Sir Lancelot";
         this.hpMax = 100;
         this.hp = this.hpMax;
         this.texture = Assets.getInstance().getAtlas().findRegion("knight");
         this.textureHp = Assets.getInstance().getAtlas().findRegion("hp");
-    }
-
-    @Override
-    public void startTurn() {
-        super.startTurn();
-        gc.getUnitController().calcRounds();
     }
 
     public void update(float dt) {
@@ -35,13 +31,12 @@ public class Hero extends Unit {
             }
         }
     }
-    @Override
-    public void render(SpriteBatch batch, BitmapFont font18) {
-        super.render(batch,font18);
-        font18.draw(batch,"Coins: " + coins,30,30);
-        font18.draw(batch,"Round: " + gc.getUnitController().getRounds(),230,30);
-    }
-    public String getName() {
-        return name;
+
+    public void renderHUD(SpriteBatch batch, BitmapFont font, int x, int y) {
+        stringHelper.setLength(0);
+        stringHelper
+                .append("Player: ").append(name).append("\n")
+                .append("Gold: ").append(gold).append("\n");
+        font.draw(batch, stringHelper, x, y);
     }
 }
