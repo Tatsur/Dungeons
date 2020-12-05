@@ -33,7 +33,15 @@ public class UnitController {
         }
         return true;
     }
-
+    public Unit getUnitInCell(int cellX, int cellY){
+        for (int i = 0; i < allUnits.size(); i++) {
+            Unit u = allUnits.get(i);
+            if (u.getCellX() == cellX && u.getCellY() == cellY) {
+                return u;
+            }
+        }
+        return null;
+    }
     public UnitController(GameController gc) {
         this.gc = gc;
         this.allUnits = new ArrayList<>();
@@ -68,6 +76,7 @@ public class UnitController {
     }
 
     public void render(SpriteBatch batch, BitmapFont font18) {
+       // batch.setColor(0,0,0,1);
         hero.render(batch, font18);
         monsterController.render(batch, font18);
     }
