@@ -3,6 +3,7 @@ package ru.geekbrains.dungeon.game;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.MathUtils;
+import ru.geekbrains.dungeon.game.units.Unit;
 import ru.geekbrains.dungeon.helpers.Assets;
 
 public class GameMap {
@@ -10,15 +11,35 @@ public class GameMap {
         GRASS, WATER, TREE
     }
 
+    public enum DropType {
+        NONE, GOLD
+    }
+    public enum CellComplexity{
+        NORMAL(1), HARD(2), IMPOSSIBLE(3);
+        int complexityIndex;
+        CellComplexity(int complexityIndex){
+            this.complexityIndex = complexityIndex;
+        }
+    }
     private class Cell {
         CellType type;
+        CellComplexity cellComplexity;
+        DropType dropType;
+        int dropPower;
+
         int index;
-        boolean visible;
 
         public Cell() {
             type = CellType.GRASS;
+            dropType = DropType.NONE;
+            switch (MathUtils.random(1,3)){
+                case 2: cellComplexity = CellComplexity.HARD;
+                break;
+                case 3: cellComplexity = CellComplexity.IMPOSSIBLE;
+                break;
+                default: cellComplexity = CellComplexity.NORMAL;
+            }
             index = 0;
-            visible = false;
         }
 
         public void changeType(CellType to) {
@@ -44,24 +65,24 @@ public class GameMap {
 
     private Cell[][] data;
     private TextureRegion grassTexture;
+    private TextureRegion goldTexture;
     private TextureRegion[] treesTextures;
-    private GameController gc;
 
-    public GameMap(GameController gc) {
-        this.gc = gc;
+    public GameMap() {
         this.data = new Cell[CELLS_X][CELLS_Y];
         for (int i = 0; i < CELLS_X; i++) {
             for (int j = 0; j < CELLS_Y; j++) {
                 this.data[i][j] = new Cell();
             }
         }
-        int treesCount = (int)((CELLS_X * CELLS_Y * FOREST_PERCENTAGE) / 100.0f);
+        int treesCount = (int) ((CELLS_X * CELLS_Y * FOREST_PERCENTAGE) / 100.0f);
         for (int i = 0; i < treesCount; i++) {
             this.data[MathUtils.random(0, CELLS_X - 1)][MathUtils.random(0, CELLS_Y - 1)].changeType(CellType.TREE);
 
         }
 
         this.grassTexture = Assets.getInstance().getAtlas().findRegion("grass");
+        this.goldTexture = Assets.getInstance().getAtlas().findRegion("chest").split(60, 60)[0][0];
         this.treesTextures = Assets.getInstance().getAtlas().findRegion("trees").split(60, 90)[0];
     }
 
@@ -74,25 +95,57 @@ public class GameMap {
         }
         return true;
     }
-
+    public boolean isCoordinatesInMap(int x,int y){
+        return x >= 0 && y >= 0 && x < CELLS_X && y < CELLS_Y;
+    }
     public void render(SpriteBatch batch) {
         for (int i = 0; i < CELLS_X; i++) {
-            for (int j = CELLS_Y; j >= 0; j--) {
-                    if(gc.inHeroVisionRadius(i,j)) {
-                        //data[i][j].visible = true;
-                   // }
-                   // if (data[i][j].visible) {
-
-                        batch.setColor(1,1,1,1);
-                        batch.draw(grassTexture, i * CELL_SIZE, j * CELL_SIZE);
-                        if (j<CELLS_Y && data[i][j].type == CellType.TREE) {
-                            batch.draw(treesTextures[data[i][j].index], i * CELL_SIZE, j * CELL_SIZE);
-                        }
-                    } else {
-                        batch.draw(grassTexture, i * CELL_SIZE, j * CELL_SIZE);
-                        batch.setColor(0, 0, 0, 1);
-                    }
+            for (int j = CELLS_Y - 1; j >= 0; j--) {
+                float color = 1 - data[i][j].cellComplexity.complexityIndex * 0.1f;
+                batch.setColor(color,color,color,1);
+                batch.draw(grassTexture, i * CELL_SIZE, j * CELL_SIZE);
+                //batch.setColor(1,1,1,1);
+                if (data[i][j].type == CellType.TREE) {
+                    batch.draw(treesTextures[data[i][j].index], i * CELL_SIZE, j * CELL_SIZE);
+                }
+                if (data[i][j].dropType == DropType.GOLD) {
+                    batch.draw(goldTexture, i * CELL_SIZE, j * CELL_SIZE);
+                }
             }
         }
+    }
+
+    // todo: перенести в калькулятор
+    public void generateDrop(int cellX, int cellY, int power) {
+        if (MathUtils.random() < 0.5f) {
+            DropType randomDropType = DropType.GOLD;
+
+            if (randomDropType == DropType.GOLD) {
+                int goldAmount = power + MathUtils.random(power, power * 3);
+                data[cellX][cellY].dropType = randomDropType;
+                data[cellX][cellY].dropPower = goldAmount;
+            }
+        }
+    }
+
+    public boolean hasDropInCell(int cellX, int cellY) {
+        return data[cellX][cellY].dropType != DropType.NONE;
+    }
+    public int getCellComplexity(int cellX, int cellY){
+        if(isCoordinatesInMap(cellX,cellY)) {
+            return data[cellX][cellY].cellComplexity.complexityIndex;
+        }
+        return 100;
+    }
+    public void checkAndTakeDrop(Unit unit) {
+        Cell currentCell = data[unit.getCellX()][unit.getCellY()];
+        if (currentCell.dropType == DropType.NONE) {
+            return;
+        }
+        if (currentCell.dropType == DropType.GOLD) {
+            unit.addGold(currentCell.dropPower);
+        }
+        currentCell.dropType = DropType.NONE;
+        currentCell.dropPower = 0;
     }
 }
