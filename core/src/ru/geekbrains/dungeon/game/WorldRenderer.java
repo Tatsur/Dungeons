@@ -15,7 +15,6 @@ public class WorldRenderer {
     private BitmapFont font18;
     private BitmapFont font24;
     private StringBuilder stringHelper;
-    private Loot loot;
 
     public WorldRenderer(GameController gc, SpriteBatch batch) {
         this.gc = gc;
@@ -31,10 +30,8 @@ public class WorldRenderer {
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
         batch.begin();
         gc.getGameMap().render(batch);
-        gc.getLootController().render(batch);
         gc.getUnitController().render(batch, font18);
         gc.getProjectileController().render(batch);
-
         batch.setColor(1, 1, 1, 0.5f);
         batch.draw(cursorTexture, gc.getCursorX() * GameMap.CELL_SIZE, gc.getCursorY() * GameMap.CELL_SIZE);
         batch.setColor(1, 1, 1, 1);

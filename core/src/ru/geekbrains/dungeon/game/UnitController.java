@@ -4,7 +4,9 @@ import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.MathUtils;
 import lombok.Data;
-import ru.geekbrains.dungeon.screens.ScreenManager;
+import ru.geekbrains.dungeon.game.units.Hero;
+import ru.geekbrains.dungeon.game.units.Monster;
+import ru.geekbrains.dungeon.game.units.Unit;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -44,6 +46,7 @@ public class UnitController {
         for (int i = 0; i < monsterCount; i++) {
             this.createMonsterInRandomCell();
         }
+        this.createMonster(3, 1);
         this.index = -1;
         this.nextTurn();
     }
@@ -55,7 +58,6 @@ public class UnitController {
     }
 
     public void nextTurn() {
-        if (currentUnit != null)currentUnit.finishTurn();
         index++;
         if (index >= allUnits.size()) {
             index = 0;
@@ -69,12 +71,12 @@ public class UnitController {
         hero.render(batch, font18);
         monsterController.render(batch, font18);
     }
+
     public void update(float dt) {
         hero.update(dt);
         monsterController.update(dt);
 
-        if (currentUnit.endTurn || !currentUnit.isActive() || currentUnit.attacks ==0 ||
-                (currentUnit.steps == 0 && !currentUnit.canIAttackInRange(currentUnit.target))) {
+        if (!currentUnit.isActive() || !currentUnit.getStats().doIHaveAnyPoints()) {
             nextTurn();
         }
     }
@@ -86,7 +88,6 @@ public class UnitController {
             index--;
         }
     }
-
 
     public void createMonsterInRandomCell() {
         int cellX = -1, cellY = -1;
