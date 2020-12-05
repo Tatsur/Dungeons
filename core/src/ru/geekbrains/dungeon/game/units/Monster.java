@@ -1,6 +1,7 @@
 package ru.geekbrains.dungeon.game.units;
 
 import com.badlogic.gdx.math.MathUtils;
+import ru.geekbrains.dungeon.game.Armor;
 import ru.geekbrains.dungeon.game.Weapon;
 import ru.geekbrains.dungeon.helpers.Assets;
 import ru.geekbrains.dungeon.game.GameController;
@@ -15,6 +16,7 @@ public class Monster extends Unit {
         this.textureHp = Assets.getInstance().getAtlas().findRegion("hp");
         this.stats.hp = -1;
         this.weapon = new Weapon(Weapon.Type.SWORD, 2, 1);
+        this.armor = new Armor(Armor.Type.MACE_DEF,1,1);
     }
 
     public Monster activate(int cellX, int cellY) {
@@ -34,7 +36,7 @@ public class Monster extends Unit {
             if (isStayStill()) {
                 aiBrainsImplseTime += dt;
             }
-            if (aiBrainsImplseTime > 0.4f) {
+            if (aiBrainsImplseTime > 0.1f) {
                 aiBrainsImplseTime = 0.0f;
                 think(dt);
             }
@@ -63,7 +65,11 @@ public class Monster extends Unit {
             do {
                 dx = MathUtils.random(0, gc.getGameMap().getCellsX() - 1);
                 dy = MathUtils.random(0, gc.getGameMap().getCellsY() - 1);
-            } while (!(gc.isCellEmpty(dx, dy) && Utils.isCellsAreNeighbours(cellX, cellY, dx, dy)));
+                if (!isEnoughMovePoints(dx,dy)) {
+                    stats.resetPoints();
+                    break;
+                }
+            } while (!(gc.isCellEmpty(dx, dy) && Utils.getCellsIntDistance(cellX, cellY, dx, dy)>1));
             tryToMove(dx, dy);
         }
     }
@@ -73,7 +79,7 @@ public class Monster extends Unit {
         float bestDst = 10000;
         for (int i = cellX - 1; i <= cellX + 1; i++) {
             for (int j = cellY - 1; j <= cellY + 1; j++) {
-                if (Utils.isCellsAreNeighbours(cellX, cellY, i, j) && gc.isCellEmpty(i, j)) {
+                if (gc.getGameMap().isCoordinatesInMap(i,j) && Utils.isCellsAreNeighbours(cellX, cellY, i, j) && gc.isCellEmpty(i, j) && isEnoughMovePoints(i,j)) {
                     float dst = Utils.getCellsFloatDistance(preferedX, preferedY, i, j);
                     if (dst < bestDst) {
                         bestDst = dst;

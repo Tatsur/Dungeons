@@ -6,7 +6,7 @@ import ru.geekbrains.dungeon.game.units.Unit;
 public class BattleCalc {
     public static int attack(Unit attacker, Unit target) {
         int out = attacker.getWeapon().getDamage();
-        out -= target.getStats().getDefence();
+        out -= target.getArmor().getArmorVsWeapon(attacker.getWeapon());
         if (out < 0) {
             out = 0;
         }

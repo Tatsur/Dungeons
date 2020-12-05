@@ -5,10 +5,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.MathUtils;
 import lombok.Data;
-import ru.geekbrains.dungeon.game.BattleCalc;
-import ru.geekbrains.dungeon.game.GameController;
-import ru.geekbrains.dungeon.game.GameMap;
-import ru.geekbrains.dungeon.game.Weapon;
+import ru.geekbrains.dungeon.game.*;
 import ru.geekbrains.dungeon.helpers.Assets;
 import ru.geekbrains.dungeon.helpers.Poolable;
 
@@ -56,23 +53,26 @@ public abstract class Unit implements Poolable {
     float movementMaxTime;
     int targetX, targetY;
     Weapon weapon;
+    Armor armor;
 
     float innerTimer;
     StringBuilder stringHelper;
     Direction currentDirection;
+    int moveComplexity;
 
     float timePerFrame;
     float walkingTime;
 
     public Unit(GameController gc, int cellX, int cellY, int hpMax, String textureName) {
         this.gc = gc;
-        this.stats = new Stats(hpMax, 2, 1, 1, 5, 1, 5);
+        this.stats = new Stats(hpMax, 2, 1, 1, 5, 1, 7);
         this.cellX = cellX;
         this.cellY = cellY;
         this.targetX = cellX;
         this.targetY = cellY;
         this.movementMaxTime = 0.4f;
         this.timePerFrame = 0.1f;
+        this.moveComplexity = 1;
         this.innerTimer = MathUtils.random(1000.0f);
         this.stringHelper = new StringBuilder();
         this.gold = MathUtils.random(1, 5);
@@ -113,16 +113,22 @@ public abstract class Unit implements Poolable {
     public boolean canIMakeAction() {
         return gc.getUnitController().isItMyTurn(this) && getStats().doIHaveAnyPoints() && isStayStill();
     }
-
+    public boolean isEnoughMovePoints(int targetX,int targetY){
+        return stats.movePoints>=getCellComplexity(targetX,targetY);
+    }
+    public int getCellComplexity(int cellX, int cellY){
+        moveComplexity = gc.getGameMap().getCellComplexity(cellX,cellY);
+        return moveComplexity;
+    }
     public boolean isStayStill() {
         return cellY == targetY && cellX == targetX;
     }
 
     public void goTo(int argCellX, int argCellY) {
-        if (!gc.getGameMap().isCellPassable(argCellX, argCellY) || !gc.getUnitController().isCellFree(argCellX, argCellY)) {
+        if (!isEnoughMovePoints(argCellX,argCellY) || !gc.getGameMap().isCellPassable(argCellX, argCellY) || !gc.getUnitController().isCellFree(argCellX, argCellY)) {
             return;
         }
-        if (stats.movePoints > 0 && Math.abs(argCellX - cellX) + Math.abs(argCellY - cellY) == 1) {
+        if (stats.movePoints >= moveComplexity && Math.abs(argCellX - cellX) + Math.abs(argCellY - cellY) == 1) {
             targetX = argCellX;
             targetY = argCellY;
             currentDirection = Direction.getMoveDirection(cellX, cellY, targetX, targetY);
@@ -152,7 +158,7 @@ public abstract class Unit implements Poolable {
                 movementTime = 0;
                 cellX = targetX;
                 cellY = targetY;
-                stats.movePoints--;
+                stats.movePoints -= moveComplexity;
                 gc.getGameMap().checkAndTakeDrop(this);
             }
         }
@@ -193,9 +199,8 @@ public abstract class Unit implements Poolable {
         }
         batch.setColor(1.0f, 1.0f, 1.0f, 1.0f);
     }
-
-
     public boolean amIBlocked() {
-        return !(gc.isCellEmpty(cellX - 1, cellY) || gc.isCellEmpty(cellX + 1, cellY) || gc.isCellEmpty(cellX, cellY - 1) || gc.isCellEmpty(cellX, cellY + 1));
+        return !(gc.isCellEmpty(cellX - 1, cellY) || gc.isCellEmpty(cellX + 1, cellY) || gc.isCellEmpty(cellX, cellY - 1) || gc.isCellEmpty(cellX, cellY + 1))
+                && !(isEnoughMovePoints(cellX -1,cellY) || isEnoughMovePoints(cellX + 1, cellY) || isEnoughMovePoints(cellX, cellY - 1) || isEnoughMovePoints(cellX, cellY + 1));
     }
 }
