@@ -14,16 +14,10 @@ public class GameMap {
     public enum DropType {
         NONE, GOLD
     }
-    public enum CellComplexity{
-        NORMAL(1), HARD(2), IMPOSSIBLE(3);
-        int complexityIndex;
-        CellComplexity(int complexityIndex){
-            this.complexityIndex = complexityIndex;
-        }
-    }
+
     private class Cell {
         CellType type;
-        CellComplexity cellComplexity;
+
         DropType dropType;
         int dropPower;
 
@@ -32,13 +26,6 @@ public class GameMap {
         public Cell() {
             type = CellType.GRASS;
             dropType = DropType.NONE;
-            switch (MathUtils.random(1,3)){
-                case 2: cellComplexity = CellComplexity.HARD;
-                break;
-                case 3: cellComplexity = CellComplexity.IMPOSSIBLE;
-                break;
-                default: cellComplexity = CellComplexity.NORMAL;
-            }
             index = 0;
         }
 
@@ -95,16 +82,18 @@ public class GameMap {
         }
         return true;
     }
-    public boolean isCoordinatesInMap(int x,int y){
-        return x >= 0 && y >= 0 && x < CELLS_X && y < CELLS_Y;
-    }
-    public void render(SpriteBatch batch) {
+
+    public void renderGround(SpriteBatch batch) {
         for (int i = 0; i < CELLS_X; i++) {
             for (int j = CELLS_Y - 1; j >= 0; j--) {
-                float color = 1 - data[i][j].cellComplexity.complexityIndex * 0.1f;
-                batch.setColor(color,color,color,1);
                 batch.draw(grassTexture, i * CELL_SIZE, j * CELL_SIZE);
-                //batch.setColor(1,1,1,1);
+            }
+        }
+    }
+
+    public void renderObjects(SpriteBatch batch) {
+        for (int i = 0; i < CELLS_X; i++) {
+            for (int j = CELLS_Y - 1; j >= 0; j--) {
                 if (data[i][j].type == CellType.TREE) {
                     batch.draw(treesTextures[data[i][j].index], i * CELL_SIZE, j * CELL_SIZE);
                 }
@@ -131,12 +120,7 @@ public class GameMap {
     public boolean hasDropInCell(int cellX, int cellY) {
         return data[cellX][cellY].dropType != DropType.NONE;
     }
-    public int getCellComplexity(int cellX, int cellY){
-        if(isCoordinatesInMap(cellX,cellY)) {
-            return data[cellX][cellY].cellComplexity.complexityIndex;
-        }
-        return 100;
-    }
+
     public void checkAndTakeDrop(Unit unit) {
         Cell currentCell = data[unit.getCellX()][unit.getCellY()];
         if (currentCell.dropType == DropType.NONE) {

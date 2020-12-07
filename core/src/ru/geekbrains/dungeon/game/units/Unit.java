@@ -1,5 +1,6 @@
 package ru.geekbrains.dungeon.game.units;
 
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
@@ -53,31 +54,42 @@ public abstract class Unit implements Poolable {
     float movementMaxTime;
     int targetX, targetY;
     Weapon weapon;
-    Armor armor;
+    Armour armour;
 
     float innerTimer;
     StringBuilder stringHelper;
     Direction currentDirection;
-    int moveComplexity;
 
     float timePerFrame;
     float walkingTime;
 
+    int getCellCenterX() {
+        return cellX * GameMap.CELL_SIZE + GameMap.CELL_SIZE / 2;
+    }
+
+    int getCellCenterY() {
+        return cellY * GameMap.CELL_SIZE + GameMap.CELL_SIZE / 2;
+    }
+
+    int getCellTopY() {
+        return (cellY + 1) * GameMap.CELL_SIZE;
+    }
+
     public Unit(GameController gc, int cellX, int cellY, int hpMax, String textureName) {
         this.gc = gc;
-        this.stats = new Stats(hpMax, 2, 1, 1, 5, 1, 7);
+        this.stats = new Stats(1, hpMax, 1, 5, 1, 5);
         this.cellX = cellX;
         this.cellY = cellY;
         this.targetX = cellX;
         this.targetY = cellY;
         this.movementMaxTime = 0.4f;
         this.timePerFrame = 0.1f;
-        this.moveComplexity = 1;
         this.innerTimer = MathUtils.random(1000.0f);
         this.stringHelper = new StringBuilder();
         this.gold = MathUtils.random(1, 5);
         this.textures = Assets.getInstance().getAtlas().findRegion(textureName).split(60, 60);
         this.currentDirection = Direction.DOWN;
+        this.armour = gc.getArmourController().getArmourByIndex(0);
     }
 
     public void addGold(int amount) {
@@ -103,6 +115,17 @@ public abstract class Unit implements Poolable {
 
     public boolean takeDamage(Unit source, int amount) {
         stats.hp -= amount;
+        stringHelper.setLength(0);
+        if (amount > 0) {
+            stringHelper.append(-amount);
+        } else {
+            stringHelper.append("Blocked");
+        }
+        Color currentColor = Color.WHITE;
+        if (gc.getUnitController().isItMyTurn(this)) {
+            currentColor = Color.RED;
+        }
+        gc.getInfoController().setup(getCellCenterX(), getCellTopY(), stringHelper, currentColor);
         if (stats.hp <= 0) {
             gc.getUnitController().removeUnitAfterDeath(this);
             gc.getGameMap().generateDrop(cellX, cellY, 1);
@@ -113,22 +136,16 @@ public abstract class Unit implements Poolable {
     public boolean canIMakeAction() {
         return gc.getUnitController().isItMyTurn(this) && getStats().doIHaveAnyPoints() && isStayStill();
     }
-    public boolean isEnoughMovePoints(int targetX,int targetY){
-        return stats.movePoints>=getCellComplexity(targetX,targetY);
-    }
-    public int getCellComplexity(int cellX, int cellY){
-        moveComplexity = gc.getGameMap().getCellComplexity(cellX,cellY);
-        return moveComplexity;
-    }
+
     public boolean isStayStill() {
         return cellY == targetY && cellX == targetX;
     }
 
     public void goTo(int argCellX, int argCellY) {
-        if (!isEnoughMovePoints(argCellX,argCellY) || !gc.getGameMap().isCellPassable(argCellX, argCellY) || !gc.getUnitController().isCellFree(argCellX, argCellY)) {
+        if (!gc.isCellEmpty(argCellX, argCellY)) {
             return;
         }
-        if (stats.movePoints >= moveComplexity && Math.abs(argCellX - cellX) + Math.abs(argCellY - cellY) == 1) {
+        if (stats.movePoints > 0 && Math.abs(argCellX - cellX) + Math.abs(argCellY - cellY) == 1) {
             targetX = argCellX;
             targetY = argCellY;
             currentDirection = Direction.getMoveDirection(cellX, cellY, targetX, targetY);
@@ -143,10 +160,16 @@ public abstract class Unit implements Poolable {
     public void attack(Unit target) {
         currentDirection = Direction.getMoveDirection(cellX, cellY, target.cellX, target.cellY);
         target.takeDamage(this, BattleCalc.attack(this, target));
+
         if (target.canIAttackThisTarget(this, 0)) {
-            this.takeDamage(target, BattleCalc.checkCounterAttack(this, target));
+            boolean shouldICounterAttack = BattleCalc.rollCounterAttack(this, target);
+            if (shouldICounterAttack) {
+                this.takeDamage(target, BattleCalc.checkCounterAttack(this, target));
+            }
         }
         stats.attackPoints--;
+
+        gc.getEffectController().setup(target.getCellCenterX(), target.getCellCenterY(), weapon.getFxIndex());
     }
 
     public void update(float dt) {
@@ -158,7 +181,7 @@ public abstract class Unit implements Poolable {
                 movementTime = 0;
                 cellX = targetX;
                 cellY = targetY;
-                stats.movePoints -= moveComplexity;
+                stats.movePoints--;
                 gc.getGameMap().checkAndTakeDrop(this);
             }
         }
@@ -199,8 +222,9 @@ public abstract class Unit implements Poolable {
         }
         batch.setColor(1.0f, 1.0f, 1.0f, 1.0f);
     }
+
+
     public boolean amIBlocked() {
-        return !(gc.isCellEmpty(cellX - 1, cellY) || gc.isCellEmpty(cellX + 1, cellY) || gc.isCellEmpty(cellX, cellY - 1) || gc.isCellEmpty(cellX, cellY + 1))
-                && !(isEnoughMovePoints(cellX -1,cellY) || isEnoughMovePoints(cellX + 1, cellY) || isEnoughMovePoints(cellX, cellY - 1) || isEnoughMovePoints(cellX, cellY + 1));
+        return !(gc.isCellEmpty(cellX - 1, cellY) || gc.isCellEmpty(cellX + 1, cellY) || gc.isCellEmpty(cellX, cellY - 1) || gc.isCellEmpty(cellX, cellY + 1));
     }
 }
