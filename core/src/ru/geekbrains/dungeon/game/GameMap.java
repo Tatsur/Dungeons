@@ -5,6 +5,10 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.MathUtils;
 import ru.geekbrains.dungeon.game.units.Unit;
 import ru.geekbrains.dungeon.helpers.Assets;
+import ru.geekbrains.dungeon.helpers.Utils;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class GameMap {
     public enum CellType {
@@ -12,7 +16,7 @@ public class GameMap {
     }
 
     public enum DropType {
-        NONE, GOLD
+        NONE, GOLD, FOOD
     }
 
     private class Cell {
@@ -20,7 +24,8 @@ public class GameMap {
 
         DropType dropType;
         int dropPower;
-
+        int cellX;
+        int cellY;
         int index;
 
         public Cell() {
@@ -51,11 +56,14 @@ public class GameMap {
     }
 
     private Cell[][] data;
+    private List<Cell> freeTrees;
     private TextureRegion grassTexture;
     private TextureRegion goldTexture;
+    private TextureRegion berryTexture;
     private TextureRegion[] treesTextures;
 
     public GameMap() {
+        freeTrees = new ArrayList<>();
         this.data = new Cell[CELLS_X][CELLS_Y];
         for (int i = 0; i < CELLS_X; i++) {
             for (int j = 0; j < CELLS_Y; j++) {
@@ -64,13 +72,19 @@ public class GameMap {
         }
         int treesCount = (int) ((CELLS_X * CELLS_Y * FOREST_PERCENTAGE) / 100.0f);
         for (int i = 0; i < treesCount; i++) {
-            this.data[MathUtils.random(0, CELLS_X - 1)][MathUtils.random(0, CELLS_Y - 1)].changeType(CellType.TREE);
-
+            int tempX = MathUtils.random(0, CELLS_X - 1);
+            int tempY = MathUtils.random(0, CELLS_Y - 1);
+            Cell tempCell = this.data[tempX][tempY];
+            tempCell.changeType(CellType.TREE);
+            freeTrees.add(tempCell);
+            tempCell.cellX = tempX;
+            tempCell.cellY = tempY;
         }
 
         this.grassTexture = Assets.getInstance().getAtlas().findRegion("grass");
         this.goldTexture = Assets.getInstance().getAtlas().findRegion("chest").split(60, 60)[0][0];
         this.treesTextures = Assets.getInstance().getAtlas().findRegion("trees").split(60, 90)[0];
+        this.berryTexture = Assets.getInstance().getAtlas().findRegion("berry");
     }
 
     public boolean isCellPassable(int cx, int cy) {
@@ -94,14 +108,47 @@ public class GameMap {
     public void renderObjects(SpriteBatch batch) {
         for (int i = 0; i < CELLS_X; i++) {
             for (int j = CELLS_Y - 1; j >= 0; j--) {
-                if (data[i][j].type == CellType.TREE) {
-                    batch.draw(treesTextures[data[i][j].index], i * CELL_SIZE, j * CELL_SIZE);
+                Cell tempCell = data[i][j];
+                if (tempCell.type == CellType.TREE) {
+                    batch.draw(treesTextures[tempCell.index], i * CELL_SIZE, j * CELL_SIZE);
+                    if(tempCell.dropType.equals(DropType.FOOD)){
+                        batch.draw(berryTexture,i*CELL_SIZE+15,j*CELL_SIZE+15);
+                    }
                 }
-                if (data[i][j].dropType == DropType.GOLD) {
+                if (tempCell.dropType == DropType.GOLD) {
                     batch.draw(goldTexture, i * CELL_SIZE, j * CELL_SIZE);
                 }
             }
         }
+    }
+
+    public void addBerryToTree() {
+        if(!freeTrees.isEmpty()) {
+
+            int cellIndex = MathUtils.random(freeTrees.size() - 1);
+            Cell tempCell = freeTrees.get(cellIndex);
+            tempCell.dropType = DropType.FOOD;
+            tempCell.dropPower = 50;
+            freeTrees.remove(cellIndex);
+        }
+    }
+
+    public int takeFood(int cellX,int cellY){
+        Cell c = data[cellX][cellY];
+            c.dropType = DropType.NONE;
+            int dropPower = c.dropPower;
+            c.dropPower = 0;
+            freeTrees.add(c);
+            return dropPower;
+    }
+
+    public boolean canILootThisCell(Unit unit,int targetX,int targetY){
+        if(targetX>=0 && targetY>=0 && targetX<CELLS_X && targetY<CELLS_Y) {
+            Cell c = data[targetX][targetY];
+            return c.type.equals(CellType.TREE) && Utils.getCellsIntDistance(unit.getCellX(), unit.getCellY(), targetX, targetY) <= 1
+                    && c.dropType.equals(DropType.FOOD);
+        }
+        return false;
     }
 
     // todo: перенести в калькулятор

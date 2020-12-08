@@ -76,8 +76,17 @@ public abstract class Unit implements Poolable {
     }
 
     public Unit(GameController gc, int cellX, int cellY, int hpMax, String textureName) {
-        this.gc = gc;
         this.stats = new Stats(1, hpMax, 1, 5, 1, 5);
+        init(gc, cellX, cellY, hpMax, textureName);
+    }
+
+    public Unit(GameController gc, int cellX, int cellY, int hpMax, int maxSatiety, String textureName) {
+        this.stats = new Stats(1, hpMax, 1, 5, 1, 5,maxSatiety);
+        init(gc,cellX,cellY,hpMax,textureName);
+    }
+
+    private void init(GameController gc, int cellX, int cellY, int hpMax, String textureName) {
+        this.gc = gc;
         this.cellX = cellX;
         this.cellY = cellY;
         this.targetX = cellX;
@@ -95,7 +104,10 @@ public abstract class Unit implements Poolable {
     public void addGold(int amount) {
         gold += amount;
     }
-
+    public void addFood(int amount){
+        stats.satiety += amount;
+        if(stats.satiety>stats.maxSatiety) stats.satiety = stats.maxSatiety;
+    }
     public void cure(int amount) {
         stats.restoreHp(amount);
     }
@@ -156,7 +168,6 @@ public abstract class Unit implements Poolable {
         return stats.attackPoints >= cost && (cellX - target.getCellX() == 0 && Math.abs(cellY - target.getCellY()) <= weapon.getRadius() ||
                 cellY - target.getCellY() == 0 && Math.abs(cellX - target.getCellX()) <= weapon.getRadius());
     }
-
     public void attack(Unit target) {
         currentDirection = Direction.getMoveDirection(cellX, cellY, target.cellX, target.cellY);
         target.takeDamage(this, BattleCalc.attack(this, target));
@@ -168,8 +179,15 @@ public abstract class Unit implements Poolable {
             }
         }
         stats.attackPoints--;
+        if(this.equals(gc.getUnitController().getHero())) {
+            satietyLoss();
+        }
 
         gc.getEffectController().setup(target.getCellCenterX(), target.getCellCenterY(), weapon.getFxIndex());
+    }
+    public void satietyLoss(){
+        if(stats.satiety<=0) stats.hp--;
+        else stats.satiety--;
     }
 
     public void update(float dt) {
@@ -182,6 +200,9 @@ public abstract class Unit implements Poolable {
                 cellX = targetX;
                 cellY = targetY;
                 stats.movePoints--;
+                if(this.equals(gc.getUnitController().getHero())) {
+                    satietyLoss();
+                }
                 gc.getGameMap().checkAndTakeDrop(this);
             }
         }
