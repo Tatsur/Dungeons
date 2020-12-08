@@ -74,6 +74,9 @@ public class GameController {
         if (round % 3 == 0) {
             unitController.createMonsterInRandomCell();
         }
+        if(round % 5 == 0){
+            gameMap.addBerryToTree();
+        }
     }
 
     public boolean isCellEmpty(int cx, int cy) {

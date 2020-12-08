@@ -12,7 +12,7 @@ import ru.geekbrains.dungeon.helpers.Assets;
 
 public class ScreenManager {
     public enum ScreenType {
-        MENU, GAME
+        MENU, GAME, GAME_OVER
     }
 
     public static final int WORLD_WIDTH = 1280;
@@ -85,14 +85,23 @@ public class ScreenManager {
         Gdx.input.setInputProcessor(null);
         game.setScreen(loadingScreen);
         switch (type) {
-            case MENU:
+            case MENU: {
                 targetScreen = menuScreen;
+                String title = "Dungeon";
+                menuScreen.setTitle(title);
                 Assets.getInstance().loadAssets(ScreenType.MENU);
                 break;
+            }
             case GAME:
                 targetScreen = gameScreen;
                 Assets.getInstance().loadAssets(ScreenType.GAME);
                 break;
+            case GAME_OVER: {
+                targetScreen = menuScreen;
+                String title = "Game Over";
+                menuScreen.setTitle(title);
+                Assets.getInstance().loadAssets(ScreenType.MENU);
+            }
         }
     }
 

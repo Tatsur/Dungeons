@@ -24,6 +24,11 @@ public class MenuScreen extends AbstractScreen {
     private Stage stage;
     private BitmapFont font72;
     private BitmapFont font36;
+    private String title;
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
 
     public MenuScreen(SpriteBatch batch) {
         super(batch);
@@ -42,7 +47,7 @@ public class MenuScreen extends AbstractScreen {
         Gdx.gl.glClearColor(0, 0, 0.4f, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
         batch.begin();
-        font72.draw(batch, "Dungeon", 0, 500, 1280, Align.center, false);
+        font72.draw(batch, title, 0, 500, 1280, Align.center, false);
         batch.end();
         stage.draw();
     }

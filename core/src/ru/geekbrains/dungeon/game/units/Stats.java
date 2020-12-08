@@ -9,9 +9,20 @@ public class Stats {
     int hp, maxHp;
     int attackPoints, minAttackPoints, maxAttackPoints;
     int movePoints, minMovePoints, maxMovePoints;
+    int satiety, maxSatiety;
     int visionRadius;
 
     public Stats(int level, int maxHp, int minAttackPoints, int maxAttackPoint, int minMovePoints, int maxMovePoint) {
+        init(level, maxHp, minAttackPoints, maxAttackPoint, minMovePoints, maxMovePoint);
+    }
+
+    public Stats(int level, int maxHp, int minAttackPoints, int maxAttackPoint, int minMovePoints, int maxMovePoint, int maxSatiety) {
+        init(level, maxHp, minAttackPoints, maxAttackPoint, minMovePoints, maxMovePoint);
+        this.maxSatiety = maxSatiety;
+        this.satiety = this.maxSatiety;
+    }
+
+    private void init(int level, int maxHp, int minAttackPoints, int maxAttackPoint, int minMovePoints, int maxMovePoint) {
         this.level = level;
         this.maxHp = maxHp;
         this.hp = this.maxHp;

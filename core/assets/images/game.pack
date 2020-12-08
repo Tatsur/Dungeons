@@ -1,7 +1,7 @@
 
 images1.png
 format: RGBA8888
-filter: Linear,Linear
+filter: Nearest,Nearest
 repeat: none
 upperPanel
   rotate: false
@@ -59,16 +59,37 @@ smButton
   orig: 120, 32
   offset: 0, 0
   index: -1
-grass
+mummy1
   rotate: false
   xy: 324, 402
   size: 60, 60
   orig: 60, 60
   offset: 0, 0
   index: -1
-cursor
+monster
   rotate: false
   xy: 386, 402
+  size: 60, 60
+  orig: 60, 60
+  offset: 0, 0
+  index: -1
+knight
+  rotate: false
+  xy: 484, 306
+  size: 60, 60
+  orig: 60, 60
+  offset: 0, 0
+  index: -1
+grass
+  rotate: false
+  xy: 484, 368
+  size: 60, 60
+  orig: 60, 60
+  offset: 0, 0
+  index: -1
+cursor
+  rotate: false
+  xy: 484, 430
   size: 60, 60
   orig: 60, 60
   offset: 0, 0
@@ -80,10 +101,24 @@ hp
   orig: 60, 8
   offset: 0, 0
   index: -1
+coin
+  rotate: false
+  xy: 546, 306
+  size: 50, 50
+  orig: 50, 50
+  offset: 0, 0
+  index: -1
 projectile
   rotate: false
   xy: 304, 388
   size: 16, 16
   orig: 16, 16
+  offset: 0, 0
+  index: -1
+berry
+  rotate: false
+  xy: 304, 406
+  size: 15, 17
+  orig: 15, 17
   offset: 0, 0
   index: -1

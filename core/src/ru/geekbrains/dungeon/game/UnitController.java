@@ -7,6 +7,7 @@ import lombok.Data;
 import ru.geekbrains.dungeon.game.units.Hero;
 import ru.geekbrains.dungeon.game.units.Monster;
 import ru.geekbrains.dungeon.game.units.Unit;
+import ru.geekbrains.dungeon.screens.ScreenManager;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -73,7 +74,11 @@ public class UnitController {
     }
 
     public void update(float dt) {
+        if(hero.getStats().getHp()<=0){
+            ScreenManager.getInstance().changeScreen(ScreenManager.ScreenType.GAME_OVER);
+        }
         hero.update(dt);
+
         monsterController.update(dt);
 
         if (!currentUnit.isActive() || !currentUnit.getStats().doIHaveAnyPoints()) {
